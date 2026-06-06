@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="850" viewBox="0 0 1400 850" role="img" aria-labelledby="title desc">
+  <title id="title">PredictX Industrial IoT Predictive Maintenance Architecture</title>
+  <desc id="desc">Architecture diagram showing sensor ingestion, data pipeline, feature store, model training, evaluation, explainability, prediction API, and Streamlit app.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ef476f"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#073b4c" flood-opacity="0.14"/>
+    </filter>
+    <style>
+      .bg { fill: #f7fbff; }
+      .title { font: 700 38px Arial, Helvetica, sans-serif; fill: #073b4c; }
+      .subtitle { font: 500 17px Arial, Helvetica, sans-serif; fill: #47606b; }
+      .box { fill: #ffffff; stroke: #118ab2; stroke-width: 4; filter: url(#shadow); }
+      .box-title { font: 700 23px Arial, Helvetica, sans-serif; fill: #073b4c; }
+      .box-text { font: 18px Arial, Helvetica, sans-serif; fill: #333333; }
+      .arrow { stroke: #ef476f; stroke-width: 5; fill: none; marker-end: url(#arrow); }
+      .lane { fill: #e8f4fa; stroke: #cfe8f3; stroke-width: 2; }
+      .lane-title { font: 700 17px Arial, Helvetica, sans-serif; fill: #0b5d78; letter-spacing: 1px; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1400" height="850"/>
+  <text class="title" x="50" y="62">PredictX Industrial IoT Predictive Maintenance Architecture</text>
+  <text class="subtitle" x="52" y="94">End-to-end ML lifecycle from factory sensor telemetry to proactive maintenance decisions</text>
+
+  <rect class="lane" x="45" y="120" width="1310" height="210" rx="24"/>
+  <text class="lane-title" x="70" y="145">DATA AND MODELING PIPELINE</text>
+  <rect class="lane" x="45" y="390" width="1310" height="210" rx="24"/>
+  <text class="lane-title" x="70" y="415">GOVERNANCE, EXPLAINABILITY, AND DECISIONING</text>
+  <rect class="lane" x="45" y="650" width="1310" height="150" rx="24"/>
+  <text class="lane-title" x="70" y="675">USER EXPERIENCE AND BUSINESS OPERATIONS</text>
+
+  <g id="iot-sensors">
+    <rect class="box" x="70" y="170" width="240" height="125" rx="20"/>
+    <text class="box-title" x="90" y="205">IIoT Sensors</text>
+    <text class="box-text" x="90" y="238">Temperature</text>
+    <text class="box-text" x="90" y="263">Speed / Torque</text>
+    <text class="box-text" x="90" y="288">Tool Wear</text>
+  </g>
+
+  <g id="data-pipeline">
+    <rect class="box" x="390" y="170" width="240" height="125" rx="20"/>
+    <text class="box-title" x="410" y="205">Data Pipeline</text>
+    <text class="box-text" x="410" y="238">Ingest</text>
+    <text class="box-text" x="410" y="263">Validate</text>
+    <text class="box-text" x="410" y="288">Clean</text>
+  </g>
+
+  <g id="feature-store">
+    <rect class="box" x="710" y="170" width="240" height="125" rx="20"/>
+    <text class="box-title" x="730" y="205">Feature Store</text>
+    <text class="box-text" x="730" y="238">Encoded Type</text>
+    <text class="box-text" x="730" y="263">Selected Features</text>
+    <text class="box-text" x="730" y="288">Quality Report</text>
+  </g>
+
+  <g id="model-training">
+    <rect class="box" x="1030" y="170" width="255" height="125" rx="20"/>
+    <text class="box-title" x="1050" y="205">Model Training</text>
+    <text class="box-text" x="1050" y="238">Logistic Regression</text>
+    <text class="box-text" x="1050" y="263">Decision Tree</text>
+    <text class="box-text" x="1050" y="288">Random Forest</text>
+  </g>
+
+  <g id="evaluation">
+    <rect class="box" x="230" y="450" width="240" height="125" rx="20"/>
+    <text class="box-title" x="250" y="485">Evaluation</text>
+    <text class="box-text" x="250" y="518">Precision / Recall</text>
+    <text class="box-text" x="250" y="543">F1 / ROC-AUC</text>
+    <text class="box-text" x="250" y="568">Confusion Matrix</text>
+  </g>
+
+  <g id="explainability">
+    <rect class="box" x="550" y="450" width="240" height="125" rx="20"/>
+    <text class="box-title" x="570" y="485">Explainability</text>
+    <text class="box-text" x="570" y="518">Feature Importance</text>
+    <text class="box-text" x="570" y="543">SHAP Global</text>
+    <text class="box-text" x="570" y="568">SHAP Local</text>
+  </g>
+
+  <g id="prediction-api">
+    <rect class="box" x="870" y="450" width="240" height="125" rx="20"/>
+    <text class="box-title" x="890" y="485">Prediction API</text>
+    <text class="box-text" x="890" y="518">Failure Probability</text>
+    <text class="box-text" x="890" y="543">Risk Category</text>
+    <text class="box-text" x="890" y="568">Action</text>
+  </g>
+
+  <g id="streamlit-app">
+    <rect class="box" x="550" y="695" width="275" height="100" rx="20"/>
+    <text class="box-title" x="570" y="732">Streamlit App</text>
+    <text class="box-text" x="570" y="765">Dashboard · Prediction · Insights</text>
+  </g>
+
+  <path class="arrow" d="M 310 232 L 390 232"/>
+  <path class="arrow" d="M 630 232 L 710 232"/>
+  <path class="arrow" d="M 950 232 L 1030 232"/>
+  <path class="arrow" d="M 1158 295 C 1145 365 1060 420 1000 450"/>
+  <path class="arrow" d="M 870 512 L 790 512"/>
+  <path class="arrow" d="M 550 512 L 470 512"/>
+  <path class="arrow" d="M 670 575 L 680 695"/>
+  <path class="arrow" d="M 990 575 C 940 650 850 705 825 735"/>
+</svg>
