@@ -1,241 +1,660 @@
-# PredictX: Industrial IoT Predictive Maintenance Platform
+# PredictX — Industrial IoT Predictive Maintenance
 
-PredictX is a production-oriented machine learning repository for predicting industrial equipment failures using the **AI4I 2020 Predictive Maintenance Dataset**. It demonstrates the full applied ML lifecycle expected in a real manufacturing, logistics, or smart-factory reliability program.
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-F7931E?logo=scikit-learn&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B?logo=streamlit&logoColor=white)
+![SHAP](https://img.shields.io/badge/SHAP-Explainability-8A2BE2)
+![Pytest](https://img.shields.io/badge/Tests-pytest-0A9EDC)
+![License](https://img.shields.io/badge/License-MIT-green)
+
+PredictX is an end-to-end **predictive-maintenance ML system for industrial equipment**.
+
+It takes machine and sensor telemetry, validates and prepares the data, compares multiple failure-classification models, persists the selected model, exposes single-machine risk scoring, generates explainability artifacts, and presents the results through a multi-page Streamlit application.
+
+The implementation is intentionally modular so the repository can be studied as a complete applied-ML workflow rather than as a single notebook.
 
 ![PredictX Architecture](architecture.svg)
 
-## Project Overview
+---
 
-Unexpected machine failures create downtime, maintenance cost, throughput loss, and operational uncertainty. PredictX turns sensor telemetry into actionable risk scores so maintenance teams can prioritize proactive inspections and schedule interventions before failures occur.
+## Problem
 
-The platform includes:
+Unexpected equipment failures can cause:
 
-- Data ingestion from the AI4I 2020 dataset with deterministic offline fallback.
-- Data validation, duplicate and missing-value checks, quality reporting, and feature encoding.
-- EDA visualizations automatically saved to `screenshots/`.
-- Reproducible model training for Logistic Regression, Decision Tree, and Random Forest.
-- Model evaluation with accuracy, precision, recall, F1, ROC-AUC, confusion matrix, and classification report.
-- Best-model persistence with Joblib.
-- Explainability assets with feature importance and SHAP-compatible global/local explanations.
-- Business insights for failure rate, downtime exposure, cost savings, and risk metrics.
-- A professional multi-page Streamlit dashboard.
+- unplanned downtime
+- maintenance cost
+- production interruptions
+- equipment degradation
+- operational uncertainty
 
-## Business Value
+PredictX frames predictive maintenance as a binary classification problem:
 
-PredictX helps maintenance teams answer four core questions:
+> **Given the current machine telemetry, estimate the probability of machine failure and translate that prediction into an operational risk level.**
 
-1. Which machines are most likely to fail?
-2. What operational factors are driving risk?
-3. How much downtime cost is exposed?
-4. What maintenance action should be taken now?
-
-The prediction engine returns a failure probability, risk category, and recommended action so technical model output becomes an operational decision.
-
-## Architecture
-
-The repository follows a modular lifecycle architecture:
-
-1. **IIoT Sensors**: machine type, air temperature, process temperature, rotational speed, torque, and tool wear.
-2. **Data Pipeline**: ingestion, validation, missing-value handling, duplicate detection, quality reporting, and export.
-3. **Feature Layer**: label encoding, selected features, train/test split, and schema persistence.
-4. **Training Layer**: reproducible model registry and hyperparameter configuration.
-5. **Evaluation Layer**: metrics, confusion matrix, classification report, and model comparison.
-6. **Explainability Layer**: feature importance, SHAP global explanations, SHAP local explanations, and business interpretation.
-7. **Application Layer**: Streamlit pages for dashboards, prediction, comparison, explainability, and business insights.
-
-## Dataset Description
-
-PredictX uses the AI4I 2020 Predictive Maintenance Dataset. The target is:
-
-- `Machine failure`
-
-Modeling features are:
-
-- `Type`
-- `Air temperature [K]`
-- `Process temperature [K]`
-- `Rotational speed [rpm]`
-- `Torque [Nm]`
-- `Tool wear [min]`
-
-The preprocessing module downloads the dataset from UCI when available and creates a deterministic AI4I-like fallback dataset when external network access is unavailable, keeping the project executable in restricted environments.
-
-## Repository Structure
+The application turns the model output into:
 
 ```text
-PredictX/
-├── app/                         # Streamlit pages
-├── src/                         # ML lifecycle source modules
-├── data/raw/                    # Raw dataset location
-├── data/processed/              # Processed data and quality reports
-├── models/                      # Joblib and metric artifacts
-├── screenshots/                 # Generated EDA/evaluation/explainability images
-├── notebooks/PredictX_EDA.ipynb # EDA notebook
-├── tests/                       # Unit tests
-├── requirements.txt
-├── streamlit_app.py
-├── README.md
-├── LICENSE
-├── .gitignore
-└── architecture.svg
+sensor telemetry
+      ↓
+validated features
+      ↓
+failure probability
+      ↓
+risk category
+      ↓
+maintenance recommendation
 ```
 
-## EDA Findings to Review
+---
 
-Run the EDA pipeline to create:
+## What Is Implemented
 
-- Histograms of sensor measurements.
-- Correlation heatmap.
-- Failure distribution plot.
-- Boxplots by failure status.
-- Feature-to-failure correlation analysis.
-- Statistical summary CSV.
+### Data & preprocessing
 
-```bash
-python -m src.eda
-```
+- AI4I 2020 dataset ingestion
+- deterministic offline fallback dataset for restricted environments
+- schema validation
+- duplicate removal
+- missing-value imputation
+- categorical feature encoding
+- data-quality reporting
+- persisted preprocessing metadata
+- reproducible train/test splitting
 
-Generated assets are written to `screenshots/`.
+### Model training
 
-## Model Training
-
-The training pipeline compares:
+Three classical ML models are trained and compared:
 
 1. Logistic Regression
 2. Decision Tree
 3. Random Forest
 
-It uses stratified train/test splitting, a fixed random seed, class-weighted models, and reproducible hyperparameters.
+The current model-selection rule prioritizes:
 
-```bash
-python -m src.train
-```
+1. F1 score
+2. ROC-AUC as the tie-breaker
 
-Artifacts:
+The selected model is persisted with Joblib.
 
-- `models/best_model.joblib`
-- `models/model_metrics.json`
-- `models/preprocessor.joblib`
-- `models/prediction_schema.json`
+### Evaluation
 
-## Evaluation Results
+The evaluation pipeline reports:
 
-Run evaluation after training:
-
-```bash
-python -m src.evaluate
-```
-
-The evaluation pipeline generates:
-
+- Accuracy
+- Precision
+- Recall
+- F1
 - ROC-AUC
-- Confusion matrix image
+- Confusion matrix
 - Classification report
-- Structured `models/evaluation_report.json`
 
-## Explainable AI
+### Prediction
 
-PredictX includes a layered explainability workflow:
+A single-machine prediction accepts:
 
-- Native model feature importance.
-- SHAP global explanations when the installed environment supports SHAP.
-- SHAP/local fallback explanation charts when SHAP execution is unavailable.
-- Business interpretation text for each major feature.
+- machine type
+- air temperature
+- process temperature
+- rotational speed
+- torque
+- tool wear
 
-```bash
-python -m src.explain
+The prediction engine returns:
+
+- failure prediction
+- failure probability
+- risk category
+- recommended maintenance action
+
+### Explainability
+
+PredictX includes:
+
+- model-native feature importance
+- SHAP-based global explanations when available
+- local explanation visualization
+- feature-importance fallbacks if SHAP execution fails
+- maintenance-oriented interpretation text
+
+### Business layer
+
+The repository also estimates:
+
+- observed failure rate
+- failure count
+- estimated downtime exposure
+- potential cost savings
+- high-tool-wear asset rate
+- high-torque alert rate
+
+These values are based on configurable business assumptions and should be treated as scenario estimates, not measured operational savings.
+
+---
+
+## Architecture
+
+```text
+                         AI4I 2020 / Offline Fallback
+                                      |
+                                      v
+                           Data ingestion + validation
+                                      |
+                                      v
+                         Cleaning + feature encoding
+                                      |
+                                      v
+                           Stratified train / test
+                                      |
+                     +----------------+----------------+
+                     |                |                |
+                     v                v                v
+               Logistic Reg.    Decision Tree    Random Forest
+                     |                |                |
+                     +----------------+----------------+
+                                      |
+                                      v
+                            Model comparison
+                                      |
+                                      v
+                              Best-model save
+                                      |
+                +---------------------+---------------------+
+                |                     |                     |
+                v                     v                     v
+           Evaluation            Explainability        Prediction
+                |                     |                     |
+                v                     v                     v
+         metrics + plots       SHAP / importance     probability
+                                                          |
+                                                          v
+                                                  risk category
+                                                          |
+                                                          v
+                                               maintenance action
+                                                          |
+                                                          v
+                                                Streamlit dashboard
 ```
 
-## Prediction Engine
+---
 
-Single-machine scoring accepts:
+## Dataset
 
-- Machine type
-- Air temperature
-- Process temperature
-- Rotational speed
-- Torque
-- Tool wear
+PredictX is designed around the **AI4I 2020 Predictive Maintenance Dataset**.
 
-It returns:
+### Modeling target
 
-- Failure prediction
-- Failure probability
-- Risk category
-- Recommended maintenance action
-
-Example:
-
-```python
-from src.predict import MachineInput, predict_failure
-
-result = predict_failure(MachineInput("L", 300.0, 310.0, 1500, 40.0, 120))
-print(result)
+```text
+Machine failure
 ```
 
-## Streamlit Web Application
+### Features used
 
-Run the dashboard locally:
+| Feature | Type |
+|---|---|
+| Type | Categorical |
+| Air temperature [K] | Numeric |
+| Process temperature [K] | Numeric |
+| Rotational speed [rpm] | Numeric |
+| Torque [Nm] | Numeric |
+| Tool wear [min] | Numeric |
+
+The source dataset is downloaded from the UCI repository when available.
+
+When network access is unavailable, the preprocessing module creates a deterministic AI4I-like fallback dataset using a fixed seed. This keeps development and tests runnable offline, but **fallback data should not be interpreted as the real AI4I benchmark**.
+
+---
+
+## Preprocessing
+
+The preprocessing pipeline performs:
+
+```text
+Raw data
+   ↓
+Schema validation
+   ↓
+Quality report
+   ↓
+Duplicate removal
+   ↓
+Missing-value handling
+   ↓
+Categorical encoding
+   ↓
+Processed dataset
+```
+
+The pipeline also persists:
+
+- processed data
+- data-quality report
+- categorical encoders
+- prediction schema
+
+The project uses a fixed random seed of `42` and a `20%` test split.
+
+---
+
+## Model Training
+
+The training registry currently contains:
+
+### Logistic Regression
+
+Configured with:
+
+- `max_iter=1000`
+- `class_weight="balanced"`
+
+### Decision Tree
+
+Configured with:
+
+- `max_depth=8`
+- `min_samples_leaf=10`
+- `class_weight="balanced"`
+
+### Random Forest
+
+Configured with:
+
+- `n_estimators=160`
+- `max_depth=12`
+- `min_samples_leaf=4`
+- `class_weight="balanced_subsample"`
+- parallel training with `n_jobs=-1`
+
+All candidate models are trained on the same stratified split and evaluated using the same metrics.
+
+---
+
+## Risk Scoring
+
+The prediction engine converts the model probability into four operational bands:
+
+| Failure probability | Risk |
+|---:|---|
+| < 0.20 | Low |
+| 0.20 – <0.40 | Medium |
+| 0.40 – <0.70 | High |
+| ≥ 0.70 | Critical |
+
+The application then maps the risk category to a maintenance recommendation.
+
+```text
+Critical
+→ immediate inspection / stop or derate if appropriate
+
+High
+→ schedule maintenance in the next shift
+
+Medium
+→ increase monitoring and plan preventive maintenance
+
+Low
+→ continue routine condition monitoring
+```
+
+These recommendations are decision-support logic, not safety-certified control actions.
+
+---
+
+## Explainability
+
+The explainability layer follows a fallback hierarchy:
+
+```text
+Best model
+   ↓
+Native feature importance
+   +
+SHAP when available
+   ↓
+Global explanation
+   +
+Local explanation
+   ↓
+Business interpretation
+```
+
+For tree-based models, native feature importance is available directly.
+
+When SHAP is available, the project attempts to produce:
+
+- global SHAP summary
+- local explanation visualization
+
+If SHAP fails or is unavailable, the project generates fallback plots based on model feature importance so the application remains usable.
+
+---
+
+## Business Insights
+
+PredictX includes a small decision-support layer for maintenance economics.
+
+The current calculation accepts:
+
+- downtime cost per hour
+- average downtime per failure
+- preventable failure rate
+
+and estimates:
+
+```text
+failure count
+        ↓
+failure rate
+        ↓
+downtime exposure
+        ↓
+potential avoidable savings
+```
+
+### Important
+
+These are **scenario calculations**.
+
+For example, the default values of `$7,500/hour`, `6 hours` downtime, and `35%` preventable failures are configurable assumptions. They are not claims about a real factory's measured economics.
+
+---
+
+## Streamlit Application
+
+Launch the application with:
 
 ```bash
 streamlit run streamlit_app.py
 ```
 
-Pages:
+The dashboard contains six sections:
 
-1. Home
-2. Dashboard
-3. Prediction
-4. Model Comparison
-5. Explainability
-6. Business Insights
+### Home
+Project overview and platform capabilities.
 
-## Deployment Guide
+### Dashboard
+- machine count
+- failure rate
+- failure count
+- potential savings
+- dataset preview
+- EDA refresh
+- sensor distributions
 
-A typical deployment path is:
+### Prediction
+Interactive single-machine failure risk scoring.
 
-1. Install dependencies with `pip install -r requirements.txt`.
-2. Run `python -m src.results_summary` to generate data, model, evaluation, EDA, and explainability artifacts.
-3. Launch the web app with `streamlit run streamlit_app.py`.
-4. Package the app in a container or deploy to Streamlit Community Cloud, AWS App Runner, ECS, or an internal MLOps platform.
-5. Schedule retraining using CI/CD, Airflow, Prefect, or a managed ML pipeline.
+### Model Comparison
+- model metrics table
+- metric comparison chart
+- optional retraining
+- comparison plot export
+
+### Explainability
+- feature importance
+- explanation generation
+- SHAP/fallback visualizations
+- business interpretation of important features
+
+### Business Insights
+Interactive assumptions for:
+- downtime cost
+- downtime duration
+- preventable failure rate
+
+---
+
+## Repository Structure
+
+```text
+PredictX/
+├── app/
+│   ├── Home.py
+│   ├── Dashboard.py
+│   ├── Prediction.py
+│   ├── Model_Comparison.py
+│   ├── Explainability.py
+│   └── Business_Insights.py
+│
+├── src/
+│   ├── data_preprocessing.py   # ingestion, validation, cleaning, encoding
+│   ├── train.py                # model registry, training, selection
+│   ├── evaluate.py             # evaluation report + confusion matrix
+│   ├── predict.py              # machine-level risk scoring
+│   ├── explain.py              # SHAP + fallback explanations
+│   ├── feature_importance.py   # model-native feature importance
+│   ├── model_comparison.py     # metrics tables and comparison plots
+│   ├── business_insights.py    # maintenance economics
+│   ├── eda.py                  # EDA artifact generation
+│   ├── results_summary.py      # end-to-end pipeline orchestration
+│   └── utils.py                # configuration, logging, persistence
+│
+├── data/
+│   ├── raw/
+│   └── processed/
+├── models/
+├── screenshots/
+├── notebooks/
+│   └── PredictX_EDA.ipynb
+├── tests/
+│   ├── test_preprocessing.py
+│   ├── test_training.py
+│   └── test_prediction.py
+├── architecture.svg
+├── streamlit_app.py
+├── requirements.txt
+├── pytest.ini
+├── LICENSE
+└── README.md
+```
+
+---
+
+## Quick Start
+
+### 1. Clone
+
+```bash
+git clone https://github.com/chamanvashishth/PredictX.git
+cd PredictX
+```
+
+### 2. Create an environment
+
+```bash
+python -m venv .venv
+```
+
+Activate the environment, then:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Run the full pipeline
+
+```bash
+python -m src.results_summary
+```
+
+This orchestrates:
+- preprocessing
+- training
+- evaluation
+- EDA
+- model comparison
+- explainability
+- business insights
+
+### 4. Run individual stages
+
+```bash
+python -m src.data_preprocessing
+python -m src.eda
+python -m src.train
+python -m src.evaluate
+python -m src.explain
+```
+
+### 5. Launch the dashboard
+
+```bash
+streamlit run streamlit_app.py
+```
+
+---
 
 ## Testing
+
+Run:
 
 ```bash
 pytest -q
 ```
 
-Tests cover:
+The test suite covers:
+- preprocessing and cleaning
+- feature encoding
+- processed-data export
+- model training and artifact persistence
+- risk-category thresholds
+- end-to-end prediction output
 
-- Data preprocessing
-- Training pipeline
-- Prediction pipeline
+---
 
-## Screenshots
+## Generated Artifacts
 
-After running the pipelines, generated screenshots include:
+### `data/processed/`
+- processed dataset
+- data-quality report
 
-- `screenshots/histograms.png`
-- `screenshots/correlation_heatmap.png`
-- `screenshots/failure_distribution.png`
-- `screenshots/boxplots.png`
-- `screenshots/feature_correlation_analysis.png`
-- `screenshots/model_comparison.png`
-- `screenshots/feature_importance.png`
-- `screenshots/shap_global.png`
-- `screenshots/shap_local.png`
-- `screenshots/confusion_matrix.png`
+### `models/`
+- best model
+- model metrics
+- preprocessing artifact
+- prediction schema
+- evaluation report
 
-## Future Improvements
+### `screenshots/`
+- histograms
+- correlation heatmap
+- failure distribution
+- boxplots
+- feature correlation analysis
+- model comparison
+- feature importance
+- SHAP/global explanation
+- SHAP/local explanation
+- confusion matrix
 
-- Add streaming ingestion from MQTT, Kafka, or AWS IoT Core.
-- Add model monitoring for drift, calibration, and data-quality anomalies.
-- Integrate a feature store and experiment tracking system.
-- Add batch and REST prediction services.
-- Extend labels to failure modes and remaining useful life estimation.
-- Add CI/CD workflows and Docker deployment manifests.
+---
+
+## Engineering Characteristics
+
+### Reproducibility
+- fixed random seed
+- deterministic fallback data
+- persisted model/preprocessing artifacts
+- explicit configuration
+
+### Modularity
+Data, training, evaluation, explainability, prediction, business logic, and UI are separated into dedicated modules.
+
+### Robustness
+The project can still execute in restricted environments because dataset ingestion has an offline fallback and explainability has a fallback path.
+
+### Testability
+Core preprocessing, training, and prediction workflows have unit tests.
+
+### Decision orientation
+The prediction layer exposes a risk category and maintenance action instead of returning only a raw class label.
+
+---
+
+## Limitations
+
+PredictX is an applied ML project and a prototype for predictive-maintenance workflows. It is **not a production industrial control system**.
+
+Current limitations include:
+
+- offline fallback data is synthetic and should not be used for real benchmarking
+- no streaming telemetry ingestion
+- no online model monitoring
+- no drift detection
+- no model calibration workflow
+- no experiment tracking
+- no feature store
+- no REST inference service
+- no remaining-useful-life model
+- no failure-mode multi-class modeling
+- no distributed training
+- no industrial safety certification
+
+---
+
+## Future Work
+
+Natural extensions include:
+
+1. MQTT/Kafka/AWS IoT ingestion
+2. batch and REST inference service
+3. model registry and experiment tracking
+4. data/model drift monitoring
+5. probability calibration
+6. remaining useful life estimation
+7. failure-mode classification
+8. time-aware features
+9. containerized deployment
+10. automated retraining and CI/CD
+11. online feature storage
+12. industrial telemetry integration
+
+---
+
+## Technical Stack
+
+**Language**
+- Python
+
+**Data**
+- Pandas
+- NumPy
+
+**Machine Learning**
+- scikit-learn
+- Logistic Regression
+- Decision Tree
+- Random Forest
+
+**Explainability**
+- SHAP
+- model-native feature importance
+
+**Visualization**
+- Matplotlib
+- Seaborn
+
+**Application**
+- Streamlit
+
+**Persistence**
+- Joblib
+- JSON
+- CSV
+
+**Testing**
+- Pytest
+
+---
 
 ## License
 
-This project is licensed under the MIT License.
+MIT License. See [LICENSE](LICENSE).
+
+---
+
+## Author
+
+**Chaman Vashishth**
+
+GitHub: [@chamanvashishth](https://github.com/chamanvashishth)
